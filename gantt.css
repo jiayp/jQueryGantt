@@ -191,7 +191,7 @@ body{
 }
 
 .holyH{
-  background-color: #f3dfd5;
+  background-color: #286090;
 }
 .holy{
   background-color: #FFF5E6;
@@ -227,7 +227,7 @@ body{
   top:0;
   position:absolute;
   width:18px;
-  background: url(res/milestone.png) no-repeat;
+  background: url(/JQueryGantt/res/milestone.png) no-repeat;
   height:18px;
   display:none;
 }
@@ -248,7 +248,7 @@ body{
 }
 
 .taskBoxDiv .layout.extDep{
-  background-image:url(res/hasExternalDeps.png);
+  background-image:url(/JQueryGantt/res/hasExternalDeps.png);
 }
 
 
@@ -293,7 +293,7 @@ body{
 }
 
 .taskEditRow.rowSelected td,.taskEditRow.rowSelected input{
-  background-color:#FFFF99;  
+  background-color:#FFFF99;
 }
 
 input[readonly]{
@@ -362,11 +362,11 @@ input[readonly]{
 
 .expcoll{
   cursor: pointer;
-  background-image: url(res/toggle-expand.png);
+  background-image: url(/JQueryGantt/res/toggle-expand.png);
 }
 
 .expcoll.exp{
-  background-image: url(res/toggle_collapse.png);
+  background-image: url(/JQueryGantt/res/toggle_collapse.png);
 }
 
 .ui-resizable-helper { border: 1px dotted #00F;  }
