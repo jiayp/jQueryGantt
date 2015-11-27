@@ -24,6 +24,8 @@ function GanttMaster() {
   this.tasks = [];
   this.deletedTaskIds = [];
   this.links = [];
+  this.dots = [];
+  this.aoaStyle = false;
 
   this.editor; //element for editor
   this.gantt; //element for gantt
@@ -375,8 +377,9 @@ GanttMaster.prototype.loadProject = function (project) {
     this.maxEditableDate = Infinity;
 
   this.loadTasks(project.tasks, project.selectedRow);
+  this.dots = project.dots
   this.deletedTaskIds = [];
-  
+
   //recover saved splitter position
   if (project.splitterPosition)
     this.splitter.resize(project.splitterPosition);
@@ -815,7 +818,7 @@ GanttMaster.prototype.deleteCurrentTask=function(){
 
     //redraw
     self.redraw();
-  
+
     //[expand]
     if(par) self.editor.refreshExpandStatus(par);
 
@@ -1091,7 +1094,7 @@ GanttMaster.prototype.computeCriticalPath = function () {
 
   function initials(tasks) {
     var initials = [];
-    for (var i = 0; i < tasks.length; i++) {      
+    for (var i = 0; i < tasks.length; i++) {
       if (!tasks[i].depends || tasks[i].depends == "")
         initials.push(tasks[i]);
     }

@@ -372,11 +372,19 @@ Ganttalendar.prototype.drawTask = function (task) {
   //var prof = new Profiler("ganttDrawTask");
   editorRow = task.rowElement;
   //var top = editorRow.position().top + self.master.editor.element.parent().scrollTop();
-  var top = editorRow.position().top + editorRow.offsetParent().scrollTop();
+  if (self.master.aoaStyle)
+      var top = (task.aoa_row)*self.taskHeight + 40;
+  else
+    var top = editorRow.position().top + editorRow.offsetParent().scrollTop();
+
   var x = Math.round((task.start - self.startMillis) * self.fx);
   task.hasChild = task.isParent();
 
-  var taskBox = $(_createTaskSVG(task, {x:x, y:top+self.taskVertOffset, width:Math.round((task.end - task.start) * self.fx),height:self.taskHeight}));
+  if (self.master.aoaStyle) {
+    var taskBox = $(_createAOATaskSVG(task, {x:x, y:top+self.taskVertOffset, width:Math.round((task.end - task.start) * self.fx),height:self.taskHeight}));
+  } else {
+    var taskBox = $(_createTaskSVG(task, {x:x, y:top+self.taskVertOffset, width:Math.round((task.end - task.start) * self.fx),height:self.taskHeight}));
+  }
   task.ganttElement = taskBox;
   if (self.showCriticalPath && task.isCritical)
     taskBox.addClass("critical");
@@ -586,6 +594,97 @@ Ganttalendar.prototype.drawTask = function (task) {
     return taskSvg
   }
 
+  function _createAOATaskSVG(task, dimensions) {
+    var svg = self.svg;
+    var taskSvg = svg.svg(self.tasksGroup, dimensions.x, dimensions.y, dimensions.width, dimensions.height, {class:"taskBox taskBoxSVG taskStatusSVG", status:task.status, taskid:task.id });
+    var x=dimensions.x;
+    var y=dimensions.y;
+    var w=dimensions.width;
+    var h=dimensions.height;
+    var r=6;
+    var ps = 10;
+    //svg.title(taskSvg, task.name);
+    //external box
+    var predot = self.master.dots[task.aoa_predot]
+    var postdot = self.master.dots[task.aoa_postdot]
+    if (Math.abs(predot.time - task.start) < ps && predot.row == task.aoa_row) {
+      start_x = r;
+    } else {
+      start_x = 0;
+    }
+
+    if (Math.abs(postdot.time == task.end) < ps && postdot.row == task.aoa_row) {
+      end_x = w-r;
+    } else {
+      end_x = w;
+    }
+    if (task.hasChild)
+      svg.polyline(taskSvg,[[start_x,h/2], [end_x,h/2]], {class:"AOAArrowParent"});
+    else
+      svg.polyline(taskSvg,[[start_x,h/2], [end_x,h/2]], {class:"AOAArrow"});
+
+    //progress
+    if (task.progress > 0) {
+      var progress = svg.line(taskSvg, 0, h/2, w*(task.progress > 100 ? 100 : task.progress)/100, h/2, {class:"AOAArrowProgress"});
+    }
+
+    if (task.startIsMilestone) {
+      svg.image(taskSvg, -9, h/2-9, 18, 18, self.master.resourceUrl + "milestone.png")
+    }
+
+    if (task.endIsMilestone) {
+      svg.image(taskSvg, "100%",h/2-9, 18, 18, self.master.resourceUrl + "milestone.png", {transform:"translate(-9)"})
+    }
+
+    //task label
+    svg.text(taskSvg, 4, 8, task.name, {class:"AOAArrowLabelSVG"});
+
+    return taskSvg
+  }
+
+};
+
+Ganttalendar.prototype.drawDot = function (dot) {
+  var svg = self.svg;
+  var y = (dot.row)*self.taskHeight + 40 +self.taskVertOffset;
+  var x = Math.round((dot.time - self.startMillis) * self.fx);
+  var h = self.taskHeight
+  var r = 6
+  var taskSvg = svg.svg(self.linksGroup, x-r, y+h/2-r, r*2, r*2, {class:"AOADotBox", dotid:dot.id });
+  svg.circle(taskSvg, r, r, r, {class:"AOADot"})
+  svg.text(taskSvg, r, r, (dot.id+1).toString(), {class:"AOADotId"})
+  for (var i = 0; i < dot.outs.length; i++) {
+    var out_task = self.master.tasks[dot.outs[i]]
+    var d = out_task.aoa_row - dot.row
+    if(dot.row != out_task.aoa_row){
+      svg.polyline(taskSvg, [[r, r*2], [r, d*h+r]], {class:"AOALink"})
+    }
+    if(dot.time != out_task.start){
+      var xd = Math.round((out_task.start - dot.time)*self.fx);
+      svg.polyline(taskSvg, [[r*2, d*h+r], [r+xd, d*h+r]], {class:"AOAVirtualLink"})
+    }
+  }
+  for (var i = 0; i < dot.ins.length; i++) {
+    var in_task = self.master.tasks[dot.ins[i]]
+    var d = in_task.aoa_row - dot.row
+    if(d!=0){
+      arrow_d = 3
+      if (d < 0){
+        arrow_d = -3
+      }
+      svg.polyline(taskSvg, [[r, d*h+r], [r, r*2], [r-3, r*2+arrow_d], [r, r*2], [r+3, r*2+arrow_d]], {class:"AOALink"})
+    } else {
+      svg.polyline(taskSvg, [[-3, r-3], [0, r], [-3, r+3]], {class:"AOALink"})
+    }
+    if(dot.time != in_task.end){
+      var xd = Math.round((in_task.end - dot.time)*self.fx);
+      if(d==0){
+        svg.polyline(taskSvg, [[r+xd, d*h+r], [0, d*h+r]], {class:"AOAVirtualLink"})
+      } else {
+        svg.polyline(taskSvg, [[r+xd, d*h+r], [r, d*h+r]], {class:"AOAVirtualLink"})
+      }
+    }
+  }
 };
 
 
@@ -703,7 +802,6 @@ Ganttalendar.prototype.drawLink = function (from, to, type) {
     return jqGroup;
   }
 
-
   /**
    * A rendering method which paints a start to start dependency.
    */
@@ -752,17 +850,23 @@ Ganttalendar.prototype.redrawLinks = function () {
 
     //remove all links
     $("#linksSVG").empty();
+    if(self.master.aoaStyle){
+      for (var i = 0; i < self.master.dots.length; i++) {
+        var dot = self.master.dots[i]
+        self.drawDot(dot)
+      }
+    }else{
+      var collapsedDescendant = [];
 
-    var collapsedDescendant = [];
+      //[expand]
+      var collapsedDescendant = self.master.getCollapsedDescendant();
+      for (var i = 0; i < self.master.links.length; i++) {
+        var link = self.master.links[i];
 
-    //[expand]
-    var collapsedDescendant = self.master.getCollapsedDescendant();
-    for (var i = 0; i < self.master.links.length; i++) {
-      var link = self.master.links[i];
+        if (collapsedDescendant.indexOf(link.from) >= 0 || collapsedDescendant.indexOf(link.to) >= 0) continue;
 
-      if (collapsedDescendant.indexOf(link.from) >= 0 || collapsedDescendant.indexOf(link.to) >= 0) continue;
-
-      self.drawLink(link.from, link.to);
+        self.drawLink(link.from, link.to);
+      }
     }
     //prof.stop();
   });
@@ -774,7 +878,7 @@ Ganttalendar.prototype.reset = function () {
   this.element.find("[taskid]").remove();
 };
 
-
+/*
 Ganttalendar.prototype.redrawTasks = function () {
   //[expand]
   var collapsedDescendant = this.master.getCollapsedDescendant();
@@ -782,6 +886,43 @@ Ganttalendar.prototype.redrawTasks = function () {
     var task = this.master.tasks[i];
     if (collapsedDescendant.indexOf(task) >= 0) continue;
     this.drawTask(task);
+  }
+};
+*/
+Ganttalendar.prototype.redrawTasks = function () {
+  self = this
+  var row = 0
+  var drawed = []
+  function getSuperiorestTasks(){
+    var links = self.master.links;
+    var tasks = self.master.tasks
+    var ts = new Array(tasks.length);
+    for(var i= 0; i< links.length; i++){
+       ts[links[i].to.getRow()] = true;
+    }
+    ret = [];
+    for(var i=0; i<ts.length; i++){
+      if(!ts[i]) ret.push(tasks[i])
+    }
+    return ret;
+  }
+  function drawTasks(task){
+    self.drawTask(task, row);
+    drawed.push(task)
+    var InferiorTasks = task.getInferiorTasks();
+    for (var i = 0; i< InferiorTasks.length; i++){
+      if(drawed.indexOf(InferiorTasks[i])<0){
+        if(i > 0) row = row+1;
+        drawTasks(InferiorTasks[i], row);
+      }
+    }
+
+  }
+
+  var roots = getSuperiorestTasks()
+  for (var i = 0; i < roots.length; i++) {
+    if (i>0) row = row+1;
+    drawTasks(roots[i]);
   }
 };
 
@@ -811,7 +952,7 @@ Ganttalendar.prototype.refreshGantt = function () {
   par.append(domEl);
   this.redrawTasks();
 
-  //set old scroll  
+  //set old scroll
   //console.debug("old scroll:",scrollX,scrollY)
   par.scrollTop(scrollY);
   par.scrollLeft(scrollX);
