@@ -57,8 +57,13 @@ function Task(id, name, code, level, start, end, duration, collapsed) {
   this.startIsMilestone = false;
   this.endIsMilestone = false;
 
+  this.type = "task"
+  this.constraints = "earlier"
+  this.generate = true
+  this.show = true
+
   this.collapsed = collapsed;
-  
+
   this.rowElement; //row editor html element
   this.ganttElement; //gantt html element
   this.master;
@@ -311,7 +316,7 @@ Task.prototype.moveTo = function (start, ignoreMilestones) {
       return false;
     }
 
-    
+
     var panDelta = originalPeriod.start - this.start;
     //console.debug("panDelta",panDelta);
     //loops children to shift them
@@ -322,7 +327,7 @@ Task.prototype.moveTo = function (start, ignoreMilestones) {
         return false;
       }
     }
-  
+
 
     //console.debug("set period: somethingChanged",this);
     if (!updateTree(this)) {
@@ -723,7 +728,7 @@ Task.prototype.getInferiorTasks = function() {
 };
 
   Task.prototype.deleteTask = function() {
-  
+
   //delete both dom elements
   if (this.rowElement) {
     this.rowElement.remove();
@@ -1028,7 +1033,3 @@ function Role(id, name) {
   this.id = id;
   this.name = name;
 }
-
-
-
-
