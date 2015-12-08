@@ -98,7 +98,7 @@ body{
 
 .fixHead{
   position: absolute;
-  z-index: 2000;
+  z-index: 1000;
   top:0;
 }
 

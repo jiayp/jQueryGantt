@@ -79,16 +79,27 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
   //console.debug("GridEditor.addTask",task,row);
   //var prof = new Profiler("editorAddTaskHtml");
 
-  //remove extisting row
-  this.element.find("[taskId=" + task.id + "]").remove();
-
-  var taskRow = $.JST.createFromTemplate(task, "TASKROW");
+  var taskRow;
+  switch (task.type) {
+    case "iter":
+      taskRow = $.JST.createFromTemplate(task, "ITERROW");
+      break;
+    case "switch":
+      taskRow = $.JST.createFromTemplate(task, "SWITCHROW");
+      break;
+    default:
+      taskRow = $.JST.createFromTemplate(task, "TASKROW");
+  }
   //save row element on task
   task.rowElement = taskRow;
 
   this.bindRowEvents(task, taskRow);
 
-  if (typeof(row) != "number") {
+  el = this.element.find("[taskId=" + task.id + "]");
+
+  if(el.size() > 0)
+    el.replaceWith(taskRow);
+  else if (typeof(row) != "number") {
     var emptyRow = this.element.find(".emptyRow:first"); //tries to fill an empty row
     if (emptyRow.size() > 0)
       emptyRow.replaceWith(taskRow);
@@ -116,7 +127,7 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
     var collapsedDescendant = this.master.getCollapsedDescendant();
     if(collapsedDescendant.indexOf(task) >= 0) taskRow.hide();
   }
-          
+
 
   return taskRow;
 };
@@ -158,6 +169,16 @@ GridEditor.prototype.refreshTaskRow = function (task) {
   row.find("[name=end]").val(new Date(task.end).format()).updateOldValue();
   row.find("[name=depends]").val(task.depends);
   row.find(".taskAssigs").html(task.getAssigsString());
+
+//模板的字段
+  row.find("[name=special]").val(task.special);
+  row.find("[name=show]")[0].checked = task.show;
+  row.find("[name=generate]")[0].checked = task.generate;
+  row.find("[name=type]").val(task.type);
+  row.find("[name=iter_object]").val(task.iter_object);
+  row.find("[name=iter_type]").val(task.iter_type);
+  row.find("[name=switch_group]").val(task.switch_group);
+  row.find("[name=switch_name]").val(task.switch_name);
 
   //profiler.stop();
 };
@@ -287,10 +308,52 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
     });
   });
 
+  //binding on blur for task update (date exluded as click on calendar blur and then focus, so will always return false, its called refreshing the task row)
+  taskRow.find("input[type=checkbox]").click(function () {
+    el = $(this);
+
+    var row = el.closest("tr");
+    var taskId = row.attr("taskId");
+
+    var task = self.master.getTask(taskId);
+
+    //update task from editor
+    var field = el.attr("name");
+
+    self.master.beginTransaction();
+    task[field] = !task[field];
+    el[0].checked = task[field];
+    self.master.endTransaction();
+  });
+
+  //binding on blur for task update (date exluded as click on calendar blur and then focus, so will always return false, its called refreshing the task row)
+  taskRow.find("select").change(function () {
+    el = $(this);
+
+    var row = el.closest("tr");
+    var taskId = row.attr("taskId");
+
+    var task = self.master.getTask(taskId);
+
+    //update task from editor
+    var field = el.attr("name");
+
+    self.master.beginTransaction();
+    task[field] = el.val();
+    if (field == "type") {
+      self.addTask(task)
+    }
+    self.master.endTransaction();
+  });
 
   //binding on blur for task update (date exluded as click on calendar blur and then focus, so will always return false, its called refreshing the task row)
   taskRow.find("input:not(.date)").focus(function () {
-    $(this).updateOldValue();
+    el = $(this);
+    el.updateOldValue();
+    if("checkbox" == el.attr("type")){
+      el[0].checked = !el[0].checked;
+      this.blur();
+    }
 
   }).blur(function () {
       var el = $(this);

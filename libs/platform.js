@@ -62,8 +62,8 @@ function nearBestPosition(whereId, theObjId, centerOnEl) {
 
     var left = trueX;
     var top = trueY;
-    var barHeight = ($.browser.msie) ? 45 : 35;
-    var barWidth = ($.browser.msie) ? 20 : 0;
+    var barHeight = 35;
+    var barWidth = 0;
 
     if (trueX && trueY) {
       target.css("left", left);
@@ -636,14 +636,8 @@ function daysFromString(string,considerWorkingdays) {
 /* Object Functions */
 
 function stopBubble(e) {
-  if ($.browser.msie && event){
-    event.cancelBubble = true;
-    event.returnValue = false;
-
-  }else if (e){
-    e.stopPropagation();
-    e.preventDefault();
-  }
+  e.stopPropagation();
+  e.preventDefault();
   return false;
 }
 
@@ -951,4 +945,3 @@ function openBoardInBlack(boardId,command,params,callback){
     editUrl=editUrl+params;
   openBlackPopup(editUrl,$(window).width()-100,$(window).height()-50,callback );
 }
-
