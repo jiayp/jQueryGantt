@@ -227,7 +227,7 @@ body{
   top:0;
   position:absolute;
   width:18px;
-  background: url(/JQueryGantt/res/milestone.png) no-repeat;
+  background: url(/jQueryGantt/res/milestone.png) no-repeat;
   height:18px;
   display:none;
 }
@@ -248,7 +248,7 @@ body{
 }
 
 .taskBoxDiv .layout.extDep{
-  background-image:url(/JQueryGantt/res/hasExternalDeps.png);
+  background-image:url(/jQueryGantt/res/hasExternalDeps.png);
 }
 
 
@@ -362,11 +362,11 @@ input[readonly]{
 
 .expcoll{
   cursor: pointer;
-  background-image: url(/JQueryGantt/res/toggle-expand.png);
+  background-image: url(/jQueryGantt/res/toggle-expand.png);
 }
 
 .expcoll.exp{
-  background-image: url(/JQueryGantt/res/toggle_collapse.png);
+  background-image: url(/jQueryGantt/res/toggle_collapse.png);
 }
 
 .ui-resizable-helper { border: 1px dotted #00F;  }
