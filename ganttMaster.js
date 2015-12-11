@@ -321,15 +321,16 @@ GanttMaster.prototype.addTask = function (task, row) {
   //add task in collection
   if (typeof(row) != "number") {
     this.tasks.push(task);
+    //add Link collection in memory
+    var linkLoops = !this.updateLinks(task);
   } else {
     this.tasks.splice(row, 0, task);
+    //add Link collection in memory
+    var linkLoops = !this.updateLinks(task);
 
     //recompute depends string
     this.updateDependsStrings();
   }
-
-  //add Link collection in memory
-  var linkLoops = !this.updateLinks(task);
 
   //set the status according to parent
   if (task.getParent())

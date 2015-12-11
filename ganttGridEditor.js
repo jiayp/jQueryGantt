@@ -84,9 +84,6 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
     case "iter":
       taskRow = $.JST.createFromTemplate(task, "ITERROW");
       break;
-    case "switch":
-      taskRow = $.JST.createFromTemplate(task, "SWITCHROW");
-      break;
     default:
       taskRow = $.JST.createFromTemplate(task, "TASKROW");
   }
@@ -175,10 +172,7 @@ GridEditor.prototype.refreshTaskRow = function (task) {
   row.find("[name=show]")[0].checked = task.show;
   row.find("[name=generate]")[0].checked = task.generate;
   row.find("[name=type]").val(task.type);
-  row.find("[name=iter_object]").val(task.iter_object);
   row.find("[name=iter_type]").val(task.iter_type);
-  row.find("[name=switch_group]").val(task.switch_group);
-  row.find("[name=switch_name]").val(task.switch_name);
 
   //profiler.stop();
 };
