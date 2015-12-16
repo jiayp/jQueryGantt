@@ -22,7 +22,7 @@
  */
 function GridEditor(master) {
   this.master = master; // is the a GantEditor instance
-  this.gridified = $.gridify($.JST.createFromTemplate({}, "TASKSEDITHEAD"));
+  this.gridified = $.gridify($.JST.createFromTemplate({}, master.prefix + "TASKSEDITHEAD"));
   this.element = this.gridified.find(".gdfTable").eq(1);
 }
 
@@ -35,9 +35,9 @@ GridEditor.prototype.fillEmptyLines = function () {
 
   //fill with empty lines
   for (var i = 0; i < rowsToAdd; i++) {
-    var emptyRow = $.JST.createFromTemplate({}, "TASKEMPTYROW");
-    //click on empty row create a task and fill above
     var master = this.master;
+    var emptyRow = $.JST.createFromTemplate({}, master.prefix + "TASKEMPTYROW");
+    //click on empty row create a task and fill above
     emptyRow.click(function (ev) {
       var emptyRow = $(this);
       //add on the first empty row only
@@ -82,10 +82,10 @@ GridEditor.prototype.addTask = function (task, row, hideIfParentCollapsed) {
   var taskRow;
   switch (task.type) {
     case "iter":
-      taskRow = $.JST.createFromTemplate(task, "ITERROW");
+      taskRow = $.JST.createFromTemplate(task, this.master.prefix + "ITERROW");
       break;
     default:
-      taskRow = $.JST.createFromTemplate(task, "TASKROW");
+      taskRow = $.JST.createFromTemplate(task, this.master.prefix + "TASKROW");
   }
   //save row element on task
   task.rowElement = taskRow;
@@ -169,8 +169,10 @@ GridEditor.prototype.refreshTaskRow = function (task) {
 
 //模板的字段
   row.find("[name=special]").val(task.special);
-  row.find("[name=show]")[0].checked = task.show;
-  row.find("[name=generate]")[0].checked = task.generate;
+  if(row.find("[name=show]").size > 0){
+    row.find("[name=show]")[0].checked = task.show;
+    row.find("[name=generate]")[0].checked = task.generate;
+  }
   row.find("[name=type]").val(task.type);
   row.find("[name=iter_type]").val(task.iter_type);
 
@@ -462,7 +464,7 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
     var taskId = tr.attr("taskid");
     var task = self.master.getTask(taskId);
 
-    var changer = $.JST.createFromTemplate({}, "CHANGE_STATUS");
+    var changer = $.JST.createFromTemplate({}, self.master.prefix + "CHANGE_STATUS");
     changer.find("[status=" + task.status + "]").addClass("selected");
     changer.find(".taskStatus").click(function (e) {
       e.stopPropagation();
@@ -515,7 +517,7 @@ GridEditor.prototype.openFullEditor = function (task, taskRow) {
   //console.debug(task);
 
   //make task editor
-  var taskEditor = $.JST.createFromTemplate({}, "TASK_EDITOR");
+  var taskEditor = $.JST.createFromTemplate({}, self.master.prefix + "TASK_EDITOR");
 
   taskEditor.find("#name").val(task.name);
   taskEditor.find("#description").val(task.description);
@@ -548,7 +550,7 @@ GridEditor.prototype.openFullEditor = function (task, taskRow) {
   // loop on already assigned resources
   for (var i = 0; i < task.assigs.length; i++) {
     var assig = task.assigs[i];
-    var assigRow = $.JST.createFromTemplate({task:task, assig:assig}, "ASSIGNMENT_ROW");
+    var assigRow = $.JST.createFromTemplate({task:task, assig:assig}, self.master.prefix + "ASSIGNMENT_ROW");
     assigsTable.append(assigRow);
   }
 
@@ -626,14 +628,14 @@ GridEditor.prototype.openFullEditor = function (task, taskRow) {
     //bind add assignment
     taskEditor.find("#addAssig").click(function () {
       var assigsTable = taskEditor.find("#assigsTable");
-      var assigRow = $.JST.createFromTemplate({task:task, assig:{id:"tmp_" + new Date().getTime()}}, "ASSIGNMENT_ROW");
+      var assigRow = $.JST.createFromTemplate({task:task, assig:{id:"tmp_" + new Date().getTime()}}, self.master.prefix + "ASSIGNMENT_ROW");
       assigsTable.append(assigRow);
       $("#bwinPopupd").scrollTop(10000);
     });
 
     taskEditor.find("#status").click(function () {
       var tskStatusChooser = $(this);
-      var changer = $.JST.createFromTemplate({}, "CHANGE_STATUS");
+      var changer = $.JST.createFromTemplate({}, self.master.prefix + "CHANGE_STATUS");
       changer.find("[status=" + task.status + "]").addClass("selected");
       changer.find(".taskStatus").click(function (e) {
         e.stopPropagation();

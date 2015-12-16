@@ -31,6 +31,14 @@ function TaskFactory() {
    * Build a new Task
    */
   this.build = function(id, name, code, level, start, duration, collapsed) {
+    if(!id){
+      if(TaskFactory.max_task_id){
+        TaskFactory.max_task_id += 1;
+      }else {
+        TaskFactory.max_task_id = 1;
+      }
+      id = (new Date()).getTime()+TaskFactory.max_task_id
+    }
     // Set at beginning of day
     var adjusted_start = computeStart(start);
     var calculated_end = computeEndByDuration(adjusted_start, duration);
