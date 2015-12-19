@@ -169,6 +169,7 @@ GridEditor.prototype.refreshTaskRow = function (task) {
 
 //模板的字段
   row.find("[name=special]").val(task.special);
+  row.find("[name=grade]").val(task.grade || "master");
   if(row.find("[name=show]").size() > 0){
     row.find("[name=show]")[0].checked = task.show;
     row.find("[name=generate]")[0].checked = task.generate;
