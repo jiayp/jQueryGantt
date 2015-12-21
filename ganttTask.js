@@ -329,7 +329,7 @@ Task.prototype.moveTo = function (start, ignoreMilestones) {
     //console.debug("panDelta",panDelta);
     //loops children to shift them
     var children = this.getChildren();
-    for (var i=0;i<children.length;i++) {
+    for (var i=children.length-1;i >= 0;i--) {
       ch = children[i];
       if (!ch.moveTo(ch.start - panDelta, false)) {
         return false;
